@@ -83,184 +83,8 @@ testingData[is.na(testingData)] = 0</code></pre>
 </div>
 <div id="fit-model" class="section level1">
 <h1>Fit model</h1>
-<div id="find-out-which-variables-should-include-in-final-model" class="section level3">
-<h3>1. Find out which variables should include in final model</h3>
-<p>I fit a logistic regression model which use <code>classe</code> as outcome and rest of variables as predictor</p>
-<pre class="r"><code>model &lt;- glm(classe ~ ., data = trainingData, family = &quot;binomial&quot;)
-print(model)</code></pre>
-<pre><code>## 
-## Call:  glm(formula = classe ~ ., family = &quot;binomial&quot;, data = trainingData)
-## 
-## Coefficients:
-##              (Intercept)      raw_timestamp_part_1  
-##               -7.221e+18                 5.463e+09  
-##     raw_timestamp_part_2             new_windowyes  
-##                4.368e+07                 5.176e+14  
-##               num_window                 roll_belt  
-##                8.191e+11                 5.104e+13  
-##               pitch_belt                  yaw_belt  
-##                2.357e+12                -2.944e+13  
-##         total_accel_belt        kurtosis_roll_belt  
-##                7.089e+12                -2.043e+15  
-##      kurtosis_picth_belt         kurtosis_yaw_belt  
-##                1.413e+13                        NA  
-##       skewness_roll_belt      skewness_roll_belt.1  
-##               -1.248e+14                 2.332e+12  
-##        skewness_yaw_belt             max_roll_belt  
-##                       NA                 2.782e+14  
-##           max_picth_belt              max_yaw_belt  
-##               -5.223e+13                 2.006e+15  
-##            min_roll_belt            min_pitch_belt  
-##               -5.670e+14                -3.084e+14  
-##             min_yaw_belt       amplitude_roll_belt  
-##                       NA                -1.906e+14  
-##     amplitude_pitch_belt        amplitude_yaw_belt  
-##                       NA                        NA  
-##     var_total_accel_belt             avg_roll_belt  
-##               -1.325e+13                 4.678e+13  
-##         stddev_roll_belt             var_roll_belt  
-##               -2.598e+14                 4.171e+13  
-##           avg_pitch_belt         stddev_pitch_belt  
-##               -1.618e+12                 4.711e+14  
-##           var_pitch_belt              avg_yaw_belt  
-##               -1.885e+14                 2.845e+14  
-##          stddev_yaw_belt              var_yaw_belt  
-##               -4.174e+14                -4.055e+11  
-##             gyros_belt_x              gyros_belt_y  
-##                6.450e+14                -3.893e+14  
-##             gyros_belt_z              accel_belt_x  
-##                1.876e+14                 2.395e+12  
-##             accel_belt_y              accel_belt_z  
-##               -5.993e+12                 2.140e+12  
-##            magnet_belt_x             magnet_belt_y  
-##               -7.212e+12                -1.357e+13  
-##            magnet_belt_z                  roll_arm  
-##                8.576e+12                 4.380e+11  
-##                pitch_arm                   yaw_arm  
-##               -5.761e+12                 1.474e+12  
-##          total_accel_arm             var_accel_arm  
-##                7.205e+12                -1.056e+13  
-##             avg_roll_arm           stddev_roll_arm  
-##               -4.551e+12                -2.979e+13  
-##             var_roll_arm             avg_pitch_arm  
-##                2.374e+11                -1.017e+13  
-##         stddev_pitch_arm             var_pitch_arm  
-##                3.154e+13                -2.610e+11  
-##              avg_yaw_arm            stddev_yaw_arm  
-##               -1.641e+13                 2.895e+13  
-##              var_yaw_arm               gyros_arm_x  
-##               -5.779e+10                 4.946e+13  
-##              gyros_arm_y               gyros_arm_z  
-##               -1.378e+12                -2.461e+13  
-##              accel_arm_x               accel_arm_y  
-##               -3.775e+12                -4.033e+12  
-##              accel_arm_z              magnet_arm_x  
-##                7.305e+12                 4.358e+11  
-##             magnet_arm_y              magnet_arm_z  
-##                1.221e+12                -3.552e+12  
-##        kurtosis_roll_arm        kurtosis_picth_arm  
-##               -3.199e+13                -2.951e+13  
-##         kurtosis_yaw_arm         skewness_roll_arm  
-##               -1.041e+14                -2.663e+14  
-##       skewness_pitch_arm          skewness_yaw_arm  
-##               -3.462e+14                -4.626e+13  
-##             max_roll_arm             max_picth_arm  
-##               -1.669e+15                -7.257e+14  
-##              max_yaw_arm              min_roll_arm  
-##                5.206e+13                 1.675e+15  
-##            min_pitch_arm               min_yaw_arm  
-##                7.408e+14                -5.415e+13  
-##       amplitude_roll_arm       amplitude_pitch_arm  
-##                1.661e+15                 7.271e+14  
-##        amplitude_yaw_arm             roll_dumbbell  
-##                       NA                 1.229e+12  
-##           pitch_dumbbell              yaw_dumbbell  
-##               -4.330e+12                -6.873e+12  
-##   kurtosis_roll_dumbbell   kurtosis_picth_dumbbell  
-##                3.499e+15                 2.485e+14  
-##    kurtosis_yaw_dumbbell    skewness_roll_dumbbell  
-##                       NA                -1.384e+14  
-##  skewness_pitch_dumbbell     skewness_yaw_dumbbell  
-##                5.784e+13                        NA  
-##        max_roll_dumbbell        max_picth_dumbbell  
-##                4.986e+14                 1.830e+15  
-##         max_yaw_dumbbell         min_roll_dumbbell  
-##               -3.582e+15                -5.012e+14  
-##       min_pitch_dumbbell          min_yaw_dumbbell  
-##               -1.806e+15                        NA  
-##  amplitude_roll_dumbbell  amplitude_pitch_dumbbell  
-##               -4.996e+14                -1.827e+15  
-##   amplitude_yaw_dumbbell      total_accel_dumbbell  
-##                       NA                 7.165e+13  
-##       var_accel_dumbbell         avg_roll_dumbbell  
-##                1.532e+13                 6.791e+12  
-##     stddev_roll_dumbbell         var_roll_dumbbell  
-##               -8.101e+13                 7.655e+11  
-##       avg_pitch_dumbbell     stddev_pitch_dumbbell  
-##               -8.341e+11                -6.786e+12  
-##       var_pitch_dumbbell          avg_yaw_dumbbell  
-##                6.571e+11                -2.098e+13  
-##      stddev_yaw_dumbbell          var_yaw_dumbbell  
-##                9.966e+13                -7.875e+11  
-##         gyros_dumbbell_x          gyros_dumbbell_y  
-##                3.516e+14                 1.993e+14  
-##         gyros_dumbbell_z          accel_dumbbell_x  
-##                1.555e+14                 9.088e+12  
-##         accel_dumbbell_y          accel_dumbbell_z  
-##                5.350e+12                -5.164e+11  
-##        magnet_dumbbell_x         magnet_dumbbell_y  
-##               -3.759e+12                -2.211e+12  
-##        magnet_dumbbell_z              roll_forearm  
-##                1.375e+13                 1.332e+12  
-##            pitch_forearm               yaw_forearm  
-##                4.700e+12                -6.571e+11  
-##    kurtosis_roll_forearm    kurtosis_picth_forearm  
-##                1.179e+14                -9.465e+13  
-##     kurtosis_yaw_forearm     skewness_roll_forearm  
-##                       NA                 7.577e+13  
-##   skewness_pitch_forearm      skewness_yaw_forearm  
-##               -4.030e+14                        NA  
-##         max_roll_forearm         max_picth_forearm  
-##               -6.662e+15                 4.244e+15  
-##          max_yaw_forearm          min_roll_forearm  
-##               -2.557e+14                 6.660e+15  
-##        min_pitch_forearm           min_yaw_forearm  
-##               -4.239e+15                        NA  
-##   amplitude_roll_forearm   amplitude_pitch_forearm  
-##                6.651e+15                -4.232e+15  
-##    amplitude_yaw_forearm       total_accel_forearm  
-##                       NA                 1.266e+13  
-##        var_accel_forearm          avg_roll_forearm  
-##                1.304e+13                 6.787e+12  
-##      stddev_roll_forearm          var_roll_forearm  
-##               -3.657e+13                 2.419e+11  
-##        avg_pitch_forearm      stddev_pitch_forearm  
-##                4.434e+13                -6.287e+13  
-##        var_pitch_forearm           avg_yaw_forearm  
-##                1.265e+12                 1.342e+12  
-##       stddev_yaw_forearm           var_yaw_forearm  
-##               -7.022e+13                 2.960e+11  
-##          gyros_forearm_x           gyros_forearm_y  
-##                2.034e+13                 1.480e+13  
-##          gyros_forearm_z           accel_forearm_x  
-##                3.310e+13                 8.497e+11  
-##          accel_forearm_y           accel_forearm_z  
-##                7.296e+11                -3.551e+11  
-##         magnet_forearm_x          magnet_forearm_y  
-##               -6.858e+11                -4.141e+11  
-##         magnet_forearm_z  
-##               -7.797e+11  
-## 
-## Degrees of Freedom: 19621 Total (i.e. Null);  19479 Residual
-## Null Deviance:       23430 
-## Residual Deviance: 229400    AIC: 229700</code></pre>
-<p>From the result above, I removed all variables which have coefficient equal NA</p>
-<pre class="r"><code>trainingData &lt;- subset(trainingData, select = -c(skewness_yaw_belt, min_yaw_belt, amplitude_pitch_belt, var_roll_arm, stddev_pitch_arm, avg_yaw_arm, var_yaw_arm, kurtosis_roll_arm, kurtosis_yaw_arm, skewness_pitch_arm, max_roll_arm, max_yaw_arm, min_pitch_arm, amplitude_roll_arm, amplitude_yaw_arm, kurtosis_roll_dumbbell, kurtosis_yaw_dumbbell, skewness_pitch_dumbbell, max_roll_dumbbell, max_yaw_dumbbell, min_pitch_dumbbell, amplitude_roll_dumbbell, amplitude_yaw_dumbbell, var_accel_dumbbell, stddev_roll_dumbbell, avg_pitch_dumbbell, var_pitch_dumbbell, stddev_yaw_dumbbell, kurtosis_roll_forearm, kurtosis_yaw_forearm, skewness_pitch_forearm, max_roll_forearm, max_yaw_forearm, min_pitch_forearm, amplitude_roll_forearm, amplitude_yaw_forearm, var_accel_forearm, stddev_roll_forearm, avg_pitch_forearm, var_pitch_forearm, stddev_yaw_forearm, kurtosis_yaw_belt, amplitude_yaw_belt, avg_pitch_arm, var_pitch_arm, stddev_yaw_arm, kurtosis_picth_arm, skewness_roll_arm, skewness_yaw_arm, max_picth_arm, min_roll_arm, min_yaw_arm, amplitude_pitch_arm, kurtosis_picth_dumbbell, skewness_roll_dumbbell, skewness_yaw_dumbbell, max_picth_dumbbell, min_roll_dumbbell, min_yaw_dumbbell, amplitude_pitch_dumbbell, avg_roll_dumbbell, var_roll_dumbbell, stddev_pitch_dumbbell, avg_yaw_dumbbell, var_yaw_dumbbell, skewness_roll_forearm, skewness_yaw_forearm, max_picth_forearm, min_roll_forearm, min_yaw_forearm, amplitude_pitch_forearm, avg_roll_forearm, var_roll_forearm, stddev_pitch_forearm, avg_yaw_forearm, var_yaw_forearm))
-
-testingData &lt;- subset(testingData, select = -c(skewness_yaw_belt, min_yaw_belt, amplitude_pitch_belt, var_roll_arm, stddev_pitch_arm, avg_yaw_arm, var_yaw_arm, kurtosis_roll_arm, kurtosis_yaw_arm, skewness_pitch_arm, max_roll_arm, max_yaw_arm, min_pitch_arm, amplitude_roll_arm, amplitude_yaw_arm, kurtosis_roll_dumbbell, kurtosis_yaw_dumbbell, skewness_pitch_dumbbell, max_roll_dumbbell, max_yaw_dumbbell, min_pitch_dumbbell, amplitude_roll_dumbbell, amplitude_yaw_dumbbell, var_accel_dumbbell, stddev_roll_dumbbell, avg_pitch_dumbbell, var_pitch_dumbbell, stddev_yaw_dumbbell, kurtosis_roll_forearm, kurtosis_yaw_forearm, skewness_pitch_forearm, max_roll_forearm, max_yaw_forearm, min_pitch_forearm, amplitude_roll_forearm, amplitude_yaw_forearm, var_accel_forearm, stddev_roll_forearm, avg_pitch_forearm, var_pitch_forearm, stddev_yaw_forearm, kurtosis_yaw_belt, amplitude_yaw_belt, avg_pitch_arm, var_pitch_arm, stddev_yaw_arm, kurtosis_picth_arm, skewness_roll_arm, skewness_yaw_arm, max_picth_arm, min_roll_arm, min_yaw_arm, amplitude_pitch_arm, kurtosis_picth_dumbbell, skewness_roll_dumbbell, skewness_yaw_dumbbell, max_picth_dumbbell, min_roll_dumbbell, min_yaw_dumbbell, amplitude_pitch_dumbbell, avg_roll_dumbbell, var_roll_dumbbell, stddev_pitch_dumbbell, avg_yaw_dumbbell, var_yaw_dumbbell, skewness_roll_forearm, skewness_yaw_forearm, max_picth_forearm, min_roll_forearm, min_yaw_forearm, amplitude_pitch_forearm, avg_roll_forearm, var_roll_forearm, stddev_pitch_forearm, avg_yaw_forearm, var_yaw_forearm))</code></pre>
-</div>
 <div id="using-cross-validation-to-fit-model" class="section level3">
-<h3>2. Using cross validation to fit model</h3>
+<h3>1. Using cross validation to fit model</h3>
 <p><strong>Step 1</strong> Use K-folds with k = 5 for resampling data.</p>
 <p><strong>Step 2</strong> Fit a multinom logistic regression model.</p>
 <p><strong>Step 3</strong> Repeat <code>Step 1</code> three times.</p>
@@ -283,11 +107,11 @@ modelFit &lt;- train(classe ~ ., data = subTrainingData,
                  preProc = c(&quot;center&quot;, &quot;scale&quot;))</code></pre>
 </div>
 <div id="final-model-result" class="section level3">
-<h3>3. Final model result</h3>
+<h3>2. Final model result</h3>
 <pre><code>## Penalized Multinomial Regression 
 ## 
 ## 13737 samples
-##    80 predictor
+##   156 predictor
 ##     5 classes: 'A', 'B', 'C', 'D', 'E' 
 ## 
 ## Pre-processing: centered, scaled 
@@ -298,9 +122,9 @@ modelFit &lt;- train(classe ~ ., data = subTrainingData,
 ## Resampling results across tuning parameters:
 ## 
 ##   decay  Accuracy   Kappa      Accuracy SD  Kappa SD   
-##   0e+00  0.7447049  0.6763816  0.006938267  0.008766485
-##   1e-04  0.7445834  0.6762393  0.006635835  0.008368609
-##   1e-01  0.7454088  0.6772422  0.006376398  0.008009794
+##   0e+00  0.7406028  0.6713230  0.008864475  0.011268448
+##   1e-04  0.7420349  0.6731471  0.007861835  0.009993881
+##   1e-01  0.7425691  0.6737759  0.008208773  0.010475548
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was decay = 0.1.</code></pre>
@@ -317,13 +141,13 @@ modelFit &lt;- train(classe ~ ., data = subTrainingData,
 <h3>Calculates accuracy</h3>
 <pre class="r"><code>accuracy &lt;- sum(predictions == subTestingData$classe) / length(subTestingData$classe)
 print(paste(&quot;The accuracy of this model is: &quot;, round(accuracy * 100, 2), &quot;%&quot;, collapse = &quot;&quot;))</code></pre>
-<pre><code>## [1] &quot;The accuracy of this model is:  74.58 %&quot;</code></pre>
+<pre><code>## [1] &quot;The accuracy of this model is:  73.64 %&quot;</code></pre>
 </div>
 <div id="the-out-of-sample-error-will-be-equal-1---accuracy" class="section level3">
 <h3>The out of sample error will be equal <code>1 - accuracy</code></h3>
 <pre class="r"><code>out_of_sample_error &lt;- 1 - accuracy
 print(paste(&quot;The out of sample error is: &quot;, round(out_of_sample_error * 100, 2), &quot;%&quot;, collapse = &quot;&quot;))</code></pre>
-<pre><code>## [1] &quot;The out of sample error is:  25.42 %&quot;</code></pre>
+<pre><code>## [1] &quot;The out of sample error is:  26.36 %&quot;</code></pre>
 </div>
 </div>
 <div id="prediction-assignment-submission" class="section level1">
@@ -332,7 +156,7 @@ print(paste(&quot;The out of sample error is: &quot;, round(out_of_sample_error 
 <h3>Do prediction for testing data</h3>
 <pre class="r"><code>predictionsForSubmitting &lt;- predict(modelFit, newdata = testingData)
 print(predictionsForSubmitting)</code></pre>
-<pre><code>##  [1] C B B A A E D B A A C A B A E A A B B B
+<pre><code>##  [1] C B B A A E D B A A C A B A E E A B B B
 ## Levels: A B C D E</code></pre>
 </div>
 <div id="save-answer-to-text-files" class="section level3">

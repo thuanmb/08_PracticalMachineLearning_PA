@@ -8,6 +8,7 @@ output: html_document
 ```{r loading_libraries, cache=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
 library(caret)
 library(car)
+library(nnet)
 ```
 
 ###This report describle how the model is built, steps used in cross validation, what the expected out of sample error is, and steps to build up final model.
@@ -27,25 +28,7 @@ testingData[is.na(testingData)] = 0
 
 # Fit model
 
-### 1. Find out which variables should include in final model
-
-I fit a logistic regression model which use `classe` as outcome and rest of variables as predictor
-
-```{r find_variables, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
-model <- glm(classe ~ ., data = trainingData, family = "binomial")
-print(model)
-```
-
-From the result above, I removed all variables which have coefficient equal NA
-
-```{r remove_var, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
-trainingData <- subset(trainingData, select = -c(skewness_yaw_belt, min_yaw_belt, amplitude_pitch_belt, var_roll_arm, stddev_pitch_arm, avg_yaw_arm, var_yaw_arm, kurtosis_roll_arm, kurtosis_yaw_arm, skewness_pitch_arm, max_roll_arm, max_yaw_arm, min_pitch_arm, amplitude_roll_arm, amplitude_yaw_arm, kurtosis_roll_dumbbell, kurtosis_yaw_dumbbell, skewness_pitch_dumbbell, max_roll_dumbbell, max_yaw_dumbbell, min_pitch_dumbbell, amplitude_roll_dumbbell, amplitude_yaw_dumbbell, var_accel_dumbbell, stddev_roll_dumbbell, avg_pitch_dumbbell, var_pitch_dumbbell, stddev_yaw_dumbbell, kurtosis_roll_forearm, kurtosis_yaw_forearm, skewness_pitch_forearm, max_roll_forearm, max_yaw_forearm, min_pitch_forearm, amplitude_roll_forearm, amplitude_yaw_forearm, var_accel_forearm, stddev_roll_forearm, avg_pitch_forearm, var_pitch_forearm, stddev_yaw_forearm, kurtosis_yaw_belt, amplitude_yaw_belt, avg_pitch_arm, var_pitch_arm, stddev_yaw_arm, kurtosis_picth_arm, skewness_roll_arm, skewness_yaw_arm, max_picth_arm, min_roll_arm, min_yaw_arm, amplitude_pitch_arm, kurtosis_picth_dumbbell, skewness_roll_dumbbell, skewness_yaw_dumbbell, max_picth_dumbbell, min_roll_dumbbell, min_yaw_dumbbell, amplitude_pitch_dumbbell, avg_roll_dumbbell, var_roll_dumbbell, stddev_pitch_dumbbell, avg_yaw_dumbbell, var_yaw_dumbbell, skewness_roll_forearm, skewness_yaw_forearm, max_picth_forearm, min_roll_forearm, min_yaw_forearm, amplitude_pitch_forearm, avg_roll_forearm, var_roll_forearm, stddev_pitch_forearm, avg_yaw_forearm, var_yaw_forearm))
-
-testingData <- subset(testingData, select = -c(skewness_yaw_belt, min_yaw_belt, amplitude_pitch_belt, var_roll_arm, stddev_pitch_arm, avg_yaw_arm, var_yaw_arm, kurtosis_roll_arm, kurtosis_yaw_arm, skewness_pitch_arm, max_roll_arm, max_yaw_arm, min_pitch_arm, amplitude_roll_arm, amplitude_yaw_arm, kurtosis_roll_dumbbell, kurtosis_yaw_dumbbell, skewness_pitch_dumbbell, max_roll_dumbbell, max_yaw_dumbbell, min_pitch_dumbbell, amplitude_roll_dumbbell, amplitude_yaw_dumbbell, var_accel_dumbbell, stddev_roll_dumbbell, avg_pitch_dumbbell, var_pitch_dumbbell, stddev_yaw_dumbbell, kurtosis_roll_forearm, kurtosis_yaw_forearm, skewness_pitch_forearm, max_roll_forearm, max_yaw_forearm, min_pitch_forearm, amplitude_roll_forearm, amplitude_yaw_forearm, var_accel_forearm, stddev_roll_forearm, avg_pitch_forearm, var_pitch_forearm, stddev_yaw_forearm, kurtosis_yaw_belt, amplitude_yaw_belt, avg_pitch_arm, var_pitch_arm, stddev_yaw_arm, kurtosis_picth_arm, skewness_roll_arm, skewness_yaw_arm, max_picth_arm, min_roll_arm, min_yaw_arm, amplitude_pitch_arm, kurtosis_picth_dumbbell, skewness_roll_dumbbell, skewness_yaw_dumbbell, max_picth_dumbbell, min_roll_dumbbell, min_yaw_dumbbell, amplitude_pitch_dumbbell, avg_roll_dumbbell, var_roll_dumbbell, stddev_pitch_dumbbell, avg_yaw_dumbbell, var_yaw_dumbbell, skewness_roll_forearm, skewness_yaw_forearm, max_picth_forearm, min_roll_forearm, min_yaw_forearm, amplitude_pitch_forearm, avg_roll_forearm, var_roll_forearm, stddev_pitch_forearm, avg_yaw_forearm, var_yaw_forearm))
-
-```
-
-### 2. Using cross validation to fit model
+### 1. Using cross validation to fit model
 
 **Step 1** Use K-folds with k = 5 for resampling data.
 
@@ -93,7 +76,7 @@ modelFit <- train(classe ~ ., data = subTrainingData,
                  preProc = c("center", "scale"))
 ```
 
-### 3. Final model result
+### 2. Final model result
 
 ```{r cross_validation_print, cache=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
 print(modelFit)
@@ -144,3 +127,4 @@ pml_write_files = function(x){
 
 pml_write_files(predictionsForSubmitting)
 ```
+
