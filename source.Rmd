@@ -1,0 +1,146 @@
+---
+title: "Practical Machine Learning - Peer Assessments Report"
+author: "Thuan Bui"
+date: "Monday, February 16, 2015"
+output: html_document
+---
+
+```{r loading_libraries, cache=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
+library(caret)
+library(car)
+```
+
+###This report describle how the model is built, steps used in cross validation, what the expected out of sample error is, and steps to build up final model.
+
+# Preprocessing data and spliting into training and testing
+
+```{r pre_processing_data, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+trainingData <- read.csv("data/train/pml-training.csv", na.strings=c("","NA", "#DIV/0!"))
+trainingData <- subset(trainingData, select = -c(X, user_name, cvtd_timestamp))
+trainingData$classe <- factor(trainingData$classe)
+trainingData[is.na(trainingData)] = 0
+
+testingData <- read.csv("data/test/pml-testing.csv", na.strings=c("","NA", "#DIV/0!"))
+testingData <- subset(testingData, select = -c(X, user_name, cvtd_timestamp))
+testingData[is.na(testingData)] = 0
+```
+
+# Fit model
+
+### 1. Find out which variables should include in final model
+
+I fit a logistic regression model which use `classe` as outcome and rest of variables as predictor
+
+```{r find_variables, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+model <- glm(classe ~ ., data = trainingData, family = "binomial")
+print(model)
+```
+
+From the result above, I removed all variables which have coefficient equal NA
+
+```{r remove_var, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+trainingData <- subset(trainingData, select = -c(skewness_yaw_belt, min_yaw_belt, amplitude_pitch_belt, var_roll_arm, stddev_pitch_arm, avg_yaw_arm, var_yaw_arm, kurtosis_roll_arm, kurtosis_yaw_arm, skewness_pitch_arm, max_roll_arm, max_yaw_arm, min_pitch_arm, amplitude_roll_arm, amplitude_yaw_arm, kurtosis_roll_dumbbell, kurtosis_yaw_dumbbell, skewness_pitch_dumbbell, max_roll_dumbbell, max_yaw_dumbbell, min_pitch_dumbbell, amplitude_roll_dumbbell, amplitude_yaw_dumbbell, var_accel_dumbbell, stddev_roll_dumbbell, avg_pitch_dumbbell, var_pitch_dumbbell, stddev_yaw_dumbbell, kurtosis_roll_forearm, kurtosis_yaw_forearm, skewness_pitch_forearm, max_roll_forearm, max_yaw_forearm, min_pitch_forearm, amplitude_roll_forearm, amplitude_yaw_forearm, var_accel_forearm, stddev_roll_forearm, avg_pitch_forearm, var_pitch_forearm, stddev_yaw_forearm, kurtosis_yaw_belt, amplitude_yaw_belt, avg_pitch_arm, var_pitch_arm, stddev_yaw_arm, kurtosis_picth_arm, skewness_roll_arm, skewness_yaw_arm, max_picth_arm, min_roll_arm, min_yaw_arm, amplitude_pitch_arm, kurtosis_picth_dumbbell, skewness_roll_dumbbell, skewness_yaw_dumbbell, max_picth_dumbbell, min_roll_dumbbell, min_yaw_dumbbell, amplitude_pitch_dumbbell, avg_roll_dumbbell, var_roll_dumbbell, stddev_pitch_dumbbell, avg_yaw_dumbbell, var_yaw_dumbbell, skewness_roll_forearm, skewness_yaw_forearm, max_picth_forearm, min_roll_forearm, min_yaw_forearm, amplitude_pitch_forearm, avg_roll_forearm, var_roll_forearm, stddev_pitch_forearm, avg_yaw_forearm, var_yaw_forearm))
+
+testingData <- subset(testingData, select = -c(skewness_yaw_belt, min_yaw_belt, amplitude_pitch_belt, var_roll_arm, stddev_pitch_arm, avg_yaw_arm, var_yaw_arm, kurtosis_roll_arm, kurtosis_yaw_arm, skewness_pitch_arm, max_roll_arm, max_yaw_arm, min_pitch_arm, amplitude_roll_arm, amplitude_yaw_arm, kurtosis_roll_dumbbell, kurtosis_yaw_dumbbell, skewness_pitch_dumbbell, max_roll_dumbbell, max_yaw_dumbbell, min_pitch_dumbbell, amplitude_roll_dumbbell, amplitude_yaw_dumbbell, var_accel_dumbbell, stddev_roll_dumbbell, avg_pitch_dumbbell, var_pitch_dumbbell, stddev_yaw_dumbbell, kurtosis_roll_forearm, kurtosis_yaw_forearm, skewness_pitch_forearm, max_roll_forearm, max_yaw_forearm, min_pitch_forearm, amplitude_roll_forearm, amplitude_yaw_forearm, var_accel_forearm, stddev_roll_forearm, avg_pitch_forearm, var_pitch_forearm, stddev_yaw_forearm, kurtosis_yaw_belt, amplitude_yaw_belt, avg_pitch_arm, var_pitch_arm, stddev_yaw_arm, kurtosis_picth_arm, skewness_roll_arm, skewness_yaw_arm, max_picth_arm, min_roll_arm, min_yaw_arm, amplitude_pitch_arm, kurtosis_picth_dumbbell, skewness_roll_dumbbell, skewness_yaw_dumbbell, max_picth_dumbbell, min_roll_dumbbell, min_yaw_dumbbell, amplitude_pitch_dumbbell, avg_roll_dumbbell, var_roll_dumbbell, stddev_pitch_dumbbell, avg_yaw_dumbbell, var_yaw_dumbbell, skewness_roll_forearm, skewness_yaw_forearm, max_picth_forearm, min_roll_forearm, min_yaw_forearm, amplitude_pitch_forearm, avg_roll_forearm, var_roll_forearm, stddev_pitch_forearm, avg_yaw_forearm, var_yaw_forearm))
+
+```
+
+### 2. Using cross validation to fit model
+
+**Step 1** Use K-folds with k = 5 for resampling data.
+
+**Step 2** Fit a multinom logistic regression model.
+
+**Step 3** Repeat `Step 1` three times.
+
+**Step 4** Aggregate the fitted models into final model.
+
+```{r cross_validation, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE, include=FALSE}
+# Prepare training and testing data
+inTrain <- createDataPartition(trainingData$classe, p = .7, list = FALSE)
+subTrainingData <- trainingData[inTrain, ]
+subTestingData <- trainingData[-inTrain, ]
+
+# Fit model
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 5,
+                           repeats = 3)
+
+set.seed(78)
+modelFit <- train(classe ~ ., data = subTrainingData,
+                 method = "multinom",
+                 trControl = fitControl,
+                 preProc = c("center", "scale"))
+```
+
+**I use the `train` method of Caret package with `multinom` method to fit model following 4 steps above.**
+
+```{r cross_validation_source, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE, eval=FALSE}
+# Prepare training and testing data
+inTrain <- createDataPartition(trainingData$classe, p = .7, list = FALSE)
+subTrainingData <- trainingData[inTrain, ]
+subTestingData <- trainingData[-inTrain, ]
+
+# Fit model
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 5,
+                           repeats = 3)
+
+set.seed(78)
+modelFit <- train(classe ~ ., data = subTrainingData,
+                 method = "multinom",
+                 trControl = fitControl,
+                 preProc = c("center", "scale"))
+```
+
+### 3. Final model result
+
+```{r cross_validation_print, cache=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
+print(modelFit)
+```
+
+# Out of sample error
+
+The expected out of sample error is the error rate of prediction base on testing data. The steps to estimate out of sample error as below:
+
+### Do prediction for testing data
+
+```{r predictions, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+predictions <- predict(modelFit, newdata = subTestingData)
+```
+
+### Calculates accuracy
+
+```{r cal_accuracy, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+accuracy <- sum(predictions == subTestingData$classe) / length(subTestingData$classe)
+print(paste("The accuracy of this model is: ", round(accuracy * 100, 2), "%", collapse = ""))
+```
+
+### The out of sample error will be equal `1 - accuracy`
+
+```{r out_of_sample_error, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+out_of_sample_error <- 1 - accuracy
+print(paste("The out of sample error is: ", round(out_of_sample_error * 100, 2), "%", collapse = ""))
+```
+
+# Prediction Assignment Submission
+
+### Do prediction for testing data
+
+```{r predictions_for_submission, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+predictionsForSubmitting <- predict(modelFit, newdata = testingData)
+print(predictionsForSubmitting)
+```
+
+### Save answer to text files
+```{r submit_answer, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(predictionsForSubmitting)
+```
