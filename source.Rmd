@@ -84,26 +84,13 @@ print(modelFit)
 
 # Out of sample error
 
-The expected out of sample error is the error rate of prediction base on testing data. The steps to estimate out of sample error as below:
+The expected out of sample error is the error rate of prediction base on testing data. I used `confusionMatrix` of `caret` packge to estimate out of sample error with cross validation.
 
 ### Do prediction for testing data
 
 ```{r predictions, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
 predictions <- predict(modelFit, newdata = subTestingData)
-```
-
-### Calculates accuracy
-
-```{r cal_accuracy, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
-accuracy <- sum(predictions == subTestingData$classe) / length(subTestingData$classe)
-print(paste("The accuracy of this model is: ", round(accuracy * 100, 2), "%", collapse = ""))
-```
-
-### The out of sample error will be equal `1 - accuracy`
-
-```{r out_of_sample_error, cache=FALSE, message=FALSE, warning=FALSE, echo=TRUE}
-out_of_sample_error <- 1 - accuracy
-print(paste("The out of sample error is: ", round(out_of_sample_error * 100, 2), "%", collapse = ""))
+print(confusionMatrix(predictions, subTestingData$classe))
 ```
 
 # Prediction Assignment Submission

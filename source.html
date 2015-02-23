@@ -121,33 +121,53 @@ modelFit &lt;- train(classe ~ ., data = subTrainingData,
 ## 
 ## Resampling results across tuning parameters:
 ## 
-##   decay  Accuracy   Kappa      Accuracy SD  Kappa SD   
-##   0e+00  0.7406028  0.6713230  0.008864475  0.011268448
-##   1e-04  0.7420349  0.6731471  0.007861835  0.009993881
-##   1e-01  0.7425691  0.6737759  0.008208773  0.010475548
+##   decay  Accuracy   Kappa      Accuracy SD  Kappa SD  
+##   0e+00  0.7399234  0.6702752  0.010426060  0.01318540
+##   1e-04  0.7395590  0.6698370  0.010038416  0.01266717
+##   1e-01  0.7389522  0.6690080  0.009503551  0.01198999
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
-## The final value used for the model was decay = 0.1.</code></pre>
+## The final value used for the model was decay = 0.</code></pre>
 </div>
 </div>
 <div id="out-of-sample-error" class="section level1">
 <h1>Out of sample error</h1>
-<p>The expected out of sample error is the error rate of prediction base on testing data. The steps to estimate out of sample error as below:</p>
+<p>The expected out of sample error is the error rate of prediction base on testing data. I used <code>confusionMatrix</code> of <code>caret</code> packge to estimate out of sample error with cross validation.</p>
 <div id="do-prediction-for-testing-data" class="section level3">
 <h3>Do prediction for testing data</h3>
-<pre class="r"><code>predictions &lt;- predict(modelFit, newdata = subTestingData)</code></pre>
-</div>
-<div id="calculates-accuracy" class="section level3">
-<h3>Calculates accuracy</h3>
-<pre class="r"><code>accuracy &lt;- sum(predictions == subTestingData$classe) / length(subTestingData$classe)
-print(paste(&quot;The accuracy of this model is: &quot;, round(accuracy * 100, 2), &quot;%&quot;, collapse = &quot;&quot;))</code></pre>
-<pre><code>## [1] &quot;The accuracy of this model is:  73.64 %&quot;</code></pre>
-</div>
-<div id="the-out-of-sample-error-will-be-equal-1---accuracy" class="section level3">
-<h3>The out of sample error will be equal <code>1 - accuracy</code></h3>
-<pre class="r"><code>out_of_sample_error &lt;- 1 - accuracy
-print(paste(&quot;The out of sample error is: &quot;, round(out_of_sample_error * 100, 2), &quot;%&quot;, collapse = &quot;&quot;))</code></pre>
-<pre><code>## [1] &quot;The out of sample error is:  26.36 %&quot;</code></pre>
+<pre class="r"><code>predictions &lt;- predict(modelFit, newdata = subTestingData)
+print(confusionMatrix(predictions, subTestingData$classe))</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1436  123   89   56   65
+##          B   62  757   93   48  114
+##          C   63  123  730  100   80
+##          D   93   39   69  701   80
+##          E   20   97   45   59  743
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.7421          
+##                  95% CI : (0.7307, 0.7532)
+##     No Information Rate : 0.2845          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.6732          
+##  Mcnemar's Test P-Value : 1.482e-13       
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.8578   0.6646   0.7115   0.7272   0.6867
+## Specificity            0.9209   0.9332   0.9247   0.9429   0.9540
+## Pos Pred Value         0.8118   0.7048   0.6661   0.7138   0.7707
+## Neg Pred Value         0.9422   0.9206   0.9382   0.9464   0.9311
+## Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+## Detection Rate         0.2440   0.1286   0.1240   0.1191   0.1263
+## Detection Prevalence   0.3006   0.1825   0.1862   0.1669   0.1638
+## Balanced Accuracy      0.8894   0.7989   0.8181   0.8350   0.8203</code></pre>
 </div>
 </div>
 <div id="prediction-assignment-submission" class="section level1">
@@ -156,7 +176,7 @@ print(paste(&quot;The out of sample error is: &quot;, round(out_of_sample_error 
 <h3>Do prediction for testing data</h3>
 <pre class="r"><code>predictionsForSubmitting &lt;- predict(modelFit, newdata = testingData)
 print(predictionsForSubmitting)</code></pre>
-<pre><code>##  [1] C B B A A E D B A A C A B A E E A B B B
+<pre><code>##  [1] C B B A A E D E A A C A B A E A A B B B
 ## Levels: A B C D E</code></pre>
 </div>
 <div id="save-answer-to-text-files" class="section level3">
